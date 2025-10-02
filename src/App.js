@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import AnalysisPage from "./pages/AnalysisPage";
+import "./App.css"
 
 const initialAnalyses = JSON.parse(localStorage.getItem("analyses")) || [];
 
@@ -84,57 +85,54 @@ function App() {
   const handleBackToHome = () => setCurrentAnalysis(null);
 
   return (
-    <div className="App" style={{ padding: "20px" }}>
+    <div className="App">
       {currentAnalysis ? (
         <AnalysisPage
           analysis={currentAnalysis}
           onUpdate={handleUpdateAnalysis}
           onBack={handleBackToHome}
         />
+      ) : showNewAnalysisForm ? (
+        <div className="new-analysis-form" style={{ padding: "20px", border: "1px solid gray", marginBottom: "20px" }}>
+          <h3>Enter New Analysis Details</h3>
+          <div>
+            <label>Account ID: </label>
+            <input
+              value={newAnalysisData.accountId}
+              onChange={(e) => setNewAnalysisData({ ...newAnalysisData, accountId: e.target.value })}
+            />
+          </div>
+          <div>
+            <label>Client ID: </label>
+            <input
+              value={newAnalysisData.clientId}
+              onChange={(e) => setNewAnalysisData({ ...newAnalysisData, clientId: e.target.value })}
+            />
+          </div>
+          <div>
+            <label>Bank Account Name: </label>
+            <input
+              value={newAnalysisData.bankAccountName}
+              onChange={(e) => setNewAnalysisData({ ...newAnalysisData, bankAccountName: e.target.value })}
+            />
+          </div>
+          <div>
+            <label>Bank Account Number: </label>
+            <input
+              value={newAnalysisData.bankAccountNumber}
+              onChange={(e) => setNewAnalysisData({ ...newAnalysisData, bankAccountNumber: e.target.value })}
+            />
+          </div>
+          <button onClick={handleConfirmNewAnalysis}>Create Analysis</button>
+          <button onClick={() => setShowNewAnalysisForm(false)}>Cancel</button>
+        </div>
       ) : (
-        <>
-          {showNewAnalysisForm && (
-            <div className="new-analysis-form" style={{ padding: "20px", border: "1px solid gray", marginBottom: "20px" }}>
-              <h3>Enter New Analysis Details</h3>
-              <div>
-                <label>Account ID: </label>
-                <input
-                  value={newAnalysisData.accountId}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, accountId: e.target.value })}
-                />
-              </div>
-              <div>
-                <label>Client ID: </label>
-                <input
-                  value={newAnalysisData.clientId}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, clientId: e.target.value })}
-                />
-              </div>
-              <div>
-                <label>Bank Account Name: </label>
-                <input
-                  value={newAnalysisData.bankAccountName}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, bankAccountName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label>Bank Account Number: </label>
-                <input
-                  value={newAnalysisData.bankAccountNumber}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, bankAccountNumber: e.target.value })}
-                />
-              </div>
-              <button onClick={handleConfirmNewAnalysis}>Create Analysis</button>
-              <button onClick={() => setShowNewAnalysisForm(false)}>Cancel</button>
-            </div>
-          )}
-          <HomePage
-            analyses={analyses}
-            onStartNew={handleStartNewAnalysis}
-            onOpen={handleOpenAnalysis}
-            onDelete={handleDeleteAnalysis}
-          />
-        </>
+        <HomePage
+          analyses={analyses}
+          onStartNew={handleStartNewAnalysis}
+          onOpen={handleOpenAnalysis}
+          onDelete={handleDeleteAnalysis}
+        />
       )}
     </div>
   );

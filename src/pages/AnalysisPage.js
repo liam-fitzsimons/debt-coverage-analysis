@@ -1,5 +1,6 @@
 import React from "react";
 import TransactionTracker from "../components/TransactionTracker";
+import  "../App.css";
 
 function AnalysisPage({ analysis, onUpdate, onBack }) {
   const handleAccountChange = (field, value) => {

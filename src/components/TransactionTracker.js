@@ -5,52 +5,54 @@ import { exportToExcel } from "../utils/excelExport";
 import './TransactionTracker.css';
 
 function TransactionTracker({ analysis, onUpdate }) {
-  const [transactions, setTransactions] = useState(analysis.transactions || []);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [description, setDescription] = useState("");
-  const [debit, setDebit] = useState("");
-  const [credit, setCredit] = useState("");
+  const [category, setCategory] = useState("Income");
+  const [amount, setAmount] = useState("");
 
   const handleAddTransaction = () => {
-    if (!description) return;
+    if (!description || !category || !amount) return;
 
     const newTransaction = {
       date: new Date(selectedDate),
       description,
-      debit: Number(parseFloat(debit).toFixed(2)) || 0,
-      credit: Number(parseFloat(credit).toFixed(2)) || 0,
+      category,
+      amount: Number(parseFloat(amount).toFixed(2)) || 0,
     };
 
-    const updatedTransactions = [...transactions, newTransaction].sort(
+    const updatedTransactions = [...(analysis.transactions || []), newTransaction].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    setTransactions(updatedTransactions);
+    // Update parent directly
     onUpdate({ ...analysis, transactions: updatedTransactions });
 
     setDescription("");
-    setDebit("");
-    setCredit("");
+    setCategory("Income");
+    setAmount("");
   };
 
   const handleDeleteTransaction = (index) => {
-    const updatedTransactions = transactions.filter((_, i) => i !== index);
-    setTransactions(updatedTransactions);
+    const updatedTransactions = (analysis.transactions || []).filter((_, i) => i !== index);
     onUpdate({ ...analysis, transactions: updatedTransactions });
   };
 
-  const totalDebit = transactions.reduce((sum, tx) => sum + tx.debit, 0);
-  const totalCredit = transactions.reduce((sum, tx) => sum + tx.credit, 0);
-  const net = totalCredit - totalDebit;
+  const totalIncome = (analysis.transactions || [])
+    .filter(tx => tx.category === "Income")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const totalExpense = (analysis.transactions || [])
+    .filter(tx => tx.category !== "Income")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const net = totalIncome - totalExpense;
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px" }}>
       <div title="Click to Export" className="export-btn-container">
-        <button className="export-btn" onClick={() => exportToExcel(transactions)}>Export</button>
+        <button className="export-btn" onClick={() => exportToExcel(analysis.transactions)}>Export</button>
       </div>
 
       <div>
-        <label>Date: </label>
+        <label>Date: </label> 
         <DatePicker selected={selectedDate} onChange={setSelectedDate} dateFormat="dd/MM/yyyy" />
       </div>
 
@@ -60,13 +62,17 @@ function TransactionTracker({ analysis, onUpdate }) {
       </div>
 
       <div>
-        <label>Debit: </label>
-        <input type="number" value={debit} onChange={(e) => setDebit(e.target.value)} />
+        <label>Category: </label>
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="Income">Income</option>
+          <option value="Finco/Bank Payment">Finco/Bank Payment</option>
+          <option value="Red Flag">Red Flag</option>
+        </select>
       </div>
 
       <div>
-        <label>Credit: </label>
-        <input type="number" value={credit} onChange={(e) => setCredit(e.target.value)} />
+        <label>Amount: </label>
+        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
       </div>
 
       <button onClick={handleAddTransaction}>Add Transaction</button>
@@ -77,18 +83,18 @@ function TransactionTracker({ analysis, onUpdate }) {
           <tr>
             <th>Date</th>
             <th>Description</th>
-            <th>Debit</th>
-            <th>Credit</th>
+            <th>Category</th>
+            <th>Amount</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {transactions.map((tx, idx) => (
+          {(analysis.transactions || []).map((tx, idx) => (
             <tr key={idx}>
-              <td>{tx.date.toLocaleDateString()}</td>
+              <td>{new Date(tx.date).toLocaleDateString()}</td>
               <td>{tx.description}</td>
-              <td>{tx.debit.toFixed(2)}</td>
-              <td>{tx.credit.toFixed(2)}</td>
+              <td>{tx.category}</td>
+              <td>{tx.amount.toFixed(2)}</td>
               <td>
                 <button onClick={() => handleDeleteTransaction(idx)}>Delete</button>
               </td>
@@ -98,8 +104,8 @@ function TransactionTracker({ analysis, onUpdate }) {
       </table>
 
       <div>
-        <strong>Total Debit:</strong> {totalDebit.toFixed(2)} &nbsp;
-        <strong>Total Credit:</strong> {totalCredit.toFixed(2)} &nbsp;
+        <strong>Total Income:</strong> {totalIncome.toFixed(2)} &nbsp;
+        <strong>Total Expenses:</strong> {totalExpense.toFixed(2)} &nbsp;
         <strong>Net:</strong> {net.toFixed(2)}
       </div>
     </div>
